@@ -250,8 +250,12 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-uofl-red to-uofl-red-light rounded-xl flex items-center justify-center animate-float">
-                <span className="text-xl font-bold">R</span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center animate-float">
+                <img 
+                  src="/public/Red_Budget_Logo.png" 
+                  alt="Red Budget Logo" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl font-display font-bold">Red Budget</h1>

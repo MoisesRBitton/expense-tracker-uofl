@@ -138,8 +138,12 @@ const LoginPage = () => {
         
         <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-strong relative z-10 animate-fade-in border border-uofl-red/10">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-uofl-red to-uofl-red-light rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-gentle">
-              <span className="text-2xl font-bold text-white">R</span>
+            <div className="w-16 h-16 mx-auto mb-4 animate-bounce-gentle">
+              <img 
+                src="/public/Red_Budget_Logo.png" 
+                alt="Red Budget Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-3xl font-display font-bold text-uofl-gray-900 mb-2">Red Budget</h1>
             <p className="text-uofl-gray-600">Manage your student finances with ease</p>
