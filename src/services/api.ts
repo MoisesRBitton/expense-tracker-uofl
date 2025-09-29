@@ -1,22 +1,38 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
+
+interface ApiResponse {
+  success: boolean;
+  error?: string;
+  [key: string]: any;
+}
+
+interface ExpenseData {
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+  studentId: string;
+}
 
 class ApiService {
+  private token: string | null;
+
   constructor() {
     this.token = localStorage.getItem('authToken');
   }
 
-  setToken(token) {
+  setToken(token: string): void {
     this.token = token;
     localStorage.setItem('authToken', token);
   }
 
-  clearToken() {
+  clearToken(): void {
     this.token = null;
     localStorage.removeItem('authToken');
     localStorage.removeItem('studentId');
   }
 
-  async request(endpoint, options = {}) {
+  async request(endpoint: string, options: RequestInit = {}): Promise<ApiResponse> {
     const url = `${API_BASE_URL}${endpoint}`;
     const config = {
       headers: {
@@ -43,7 +59,7 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(studentId, password) {
+  async login(studentId: string, password: string): Promise<ApiResponse> {
     const response = await this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ studentId, password }),
@@ -56,7 +72,7 @@ class ApiService {
     return response;
   }
 
-  async register(studentId, password) {
+  async register(studentId: string, password: string): Promise<ApiResponse> {
     const response = await this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ studentId, password }),
@@ -69,7 +85,7 @@ class ApiService {
     return response;
   }
 
-  async verifyToken() {
+  async verifyToken(): Promise<ApiResponse> {
     if (!this.token) {
       throw new Error('No token available');
     }
@@ -78,35 +94,35 @@ class ApiService {
   }
 
   // Expense endpoints
-  async getExpenses() {
+  async getExpenses(): Promise<ApiResponse> {
     return this.request('/expenses');
   }
 
-  async getTotalExpenses() {
+  async getTotalExpenses(): Promise<ApiResponse> {
     return this.request('/expenses/total');
   }
 
-  async createExpense(expenseData) {
+  async createExpense(expenseData: ExpenseData): Promise<ApiResponse> {
     return this.request('/expenses', {
       method: 'POST',
       body: JSON.stringify(expenseData),
     });
   }
 
-  async updateExpense(id, expenseData) {
+  async updateExpense(id: number, expenseData: ExpenseData): Promise<ApiResponse> {
     return this.request(`/expenses/${id}`, {
       method: 'PUT',
       body: JSON.stringify(expenseData),
     });
   }
 
-  async deleteExpense(id) {
+  async deleteExpense(id: number): Promise<ApiResponse> {
     return this.request(`/expenses/${id}`, {
       method: 'DELETE',
     });
   }
 
-  async syncData() {
+  async syncData(): Promise<ApiResponse> {
     return this.request('/expenses/sync');
   }
 }

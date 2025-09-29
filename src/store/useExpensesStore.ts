@@ -17,6 +17,7 @@ interface ExpenseState {
   setStudentId: (id: string) => void;
   init: () => Promise<void>;
   addExpense: (expense: Omit<Expense, 'id'>) => Promise<void>;
+  updateExpense: (id: number, expense: Omit<Expense, 'id'>) => Promise<void>;
   deleteExpense: (id: number) => Promise<void>;
   syncWithBackend: () => Promise<void>;
   setOnlineStatus: (online: boolean) => void;
@@ -102,7 +103,7 @@ export const useExpensesStore = create<ExpenseState>((set, get) => ({
         // Update IndexedDB with backend data
         await db.expenses.where('studentId').equals(studentId).delete();
         if (expenses.length > 0) {
-          const expensesWithStudentId = expenses.map(exp => ({
+          const expensesWithStudentId = expenses.map((exp: any) => ({
             ...exp,
             studentId,
             id: undefined // Let IndexedDB generate new IDs
@@ -111,7 +112,7 @@ export const useExpensesStore = create<ExpenseState>((set, get) => ({
         }
 
         // Update store
-        const typed = expenses.map((r) => ({ ...(r as Expense), id: r.id! }));
+        const typed = expenses.map((r: any) => ({ ...(r as Expense), id: r.id! }));
         const shown = maybeNotify(total, get().notificationShown);
         set({ 
           expenses: typed, 
@@ -146,6 +147,30 @@ export const useExpensesStore = create<ExpenseState>((set, get) => ({
         }
       } catch (error) {
         console.log('Failed to sync with backend, using local data');
+      }
+    }
+
+    // Update store
+    const rows = await db.expenses.where('studentId').equals(studentId).toArray();
+    const typed = rows.map((r) => ({ ...(r as Expense), id: r.id! }));
+    const total = calculateTotal(typed);
+    const shown = maybeNotify(total, get().notificationShown);
+    set({ expenses: typed, totalExpenses: total, notificationShown: shown });
+  },
+
+  updateExpense: async (id: number, expense: Omit<Expense, 'id'>) => {
+    const studentId = get().studentId;
+    if (!studentId) return;
+
+    // Update in IndexedDB first (for offline capability)
+    await db.expenses.update(id, expense);
+    
+    // Try to sync with backend if online
+    if (get().isOnline) {
+      try {
+        await apiService.updateExpense(id, expense);
+      } catch (error) {
+        console.log('Failed to sync update with backend');
       }
     }
 

@@ -36,6 +36,7 @@ const categories = [
 const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [prefill, setPrefill] = useState<Partial<Expense>>({});
+  const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined);
   const totalExpenses = useExpensesStore((s) => s.totalExpenses);
   const expenses = useExpensesStore((s) => s.expenses);
   const isOnline = useExpensesStore((s) => s.isOnline);
@@ -67,6 +68,24 @@ const Dashboard = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('studentId');
     window.location.href = '/';
+  };
+
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+    setPrefill({});
+    setIsModalOpen(true);
+  };
+
+  const handleAddExpense = () => {
+    setEditingExpense(undefined);
+    setPrefill({});
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingExpense(undefined);
+    setPrefill({});
   };
 
   return (
@@ -202,10 +221,21 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xl font-bold text-uofl-gray-900">
-                        ${Number(exp.amount).toFixed(2)}
+                    <div className="flex items-center space-x-3">
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-uofl-gray-900">
+                          ${Number(exp.amount).toFixed(2)}
+                        </div>
                       </div>
+                      <button
+                        onClick={() => handleEditExpense(exp)}
+                        className="p-2 text-uofl-gray-400 hover:text-uofl-red hover:bg-uofl-red/10 rounded-lg transition-all duration-300 opacity-0 group-hover:opacity-100"
+                        title="Edit expense"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -256,7 +286,7 @@ const Dashboard = () => {
       {/* Floating Action Button */}
       <button
         aria-label="Add expense"
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleAddExpense}
         className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-r from-uofl-red to-uofl-red-light hover:from-uofl-red-dark hover:to-uofl-red text-white rounded-2xl shadow-strong hover:shadow-strong transform hover:scale-110 transition-all duration-300 animate-float group"
       >
         <div className="flex items-center justify-center">
@@ -268,8 +298,9 @@ const Dashboard = () => {
 
       <AddExpenseModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         initialData={prefill}
+        editingExpense={editingExpense}
       />
     </div>
   );

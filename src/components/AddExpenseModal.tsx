@@ -24,10 +24,12 @@ type AddExpenseModalProps = {
   isOpen: boolean;
   onClose: () => void;
   initialData?: Partial<Expense>;
+  editingExpense?: Expense;
 };
 
-const AddExpenseModal = ({ isOpen, onClose, initialData }: AddExpenseModalProps) => {
+const AddExpenseModal = ({ isOpen, onClose, initialData, editingExpense }: AddExpenseModalProps) => {
   const addExpense = useExpensesStore((s) => s.addExpense);
+  const updateExpense = useExpensesStore((s) => s.updateExpense);
   const studentId = useExpensesStore((s) => s.studentId);
 
   const [amount, setAmount] = useState<string>('');
@@ -36,18 +38,34 @@ const AddExpenseModal = ({ isOpen, onClose, initialData }: AddExpenseModalProps)
   const [date, setDate] = useState<string>('');
 
   useEffect(() => {
-    if (isOpen && initialData) {
-      if (typeof initialData.amount === 'number') setAmount(String(initialData.amount));
-      if (initialData.category) setCategory(initialData.category);
-      if (initialData.description) setDescription(initialData.description);
-      if (initialData.date) setDate(initialData.date);
+    if (isOpen) {
+      if (editingExpense) {
+        // Pre-populate form for editing
+        setAmount(String(editingExpense.amount));
+        setCategory(editingExpense.category);
+        setDescription(editingExpense.description);
+        setDate(editingExpense.date);
+      } else if (initialData) {
+        // Pre-populate form for new expense with initial data (e.g., from OCR)
+        if (typeof initialData.amount === 'number') setAmount(String(initialData.amount));
+        if (initialData.category) setCategory(initialData.category);
+        if (initialData.description) setDescription(initialData.description);
+        if (initialData.date) setDate(initialData.date);
+      } else {
+        // Reset form for new expense
+        setAmount('');
+        setCategory('Other');
+        setDescription('');
+        setDate(new Date().toISOString().split('T')[0]); // Default to today
+      }
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initialData, editingExpense]);
 
   if (!isOpen) return null;
 
   const handleClose = () => {
     onClose();
+    // Reset form state
     setAmount('');
     setCategory('Other');
     setDescription('');
@@ -110,19 +128,28 @@ const AddExpenseModal = ({ isOpen, onClose, initialData }: AddExpenseModalProps)
     }
 
     try {
-      await addExpense({
+      const expenseData = {
         amount: parsedAmount,
         category,
         description: description.trim() || 'No description',
         date,
         studentId,
-      });
+      };
+
+      if (editingExpense) {
+        // Update existing expense
+        await updateExpense(editingExpense.id, expenseData);
+        toast.success('Expense updated successfully!');
+      } else {
+        // Add new expense
+        await addExpense(expenseData);
+        toast.success('Expense added successfully!');
+      }
       
-      toast.success('Expense added successfully!');
       handleClose();
     } catch (error) {
-      toast.error('Failed to add expense. Please try again.');
-      console.error('Error adding expense:', error);
+      toast.error(editingExpense ? 'Failed to update expense. Please try again.' : 'Failed to add expense. Please try again.');
+      console.error('Error with expense:', error);
     }
   };
 
@@ -151,8 +178,12 @@ const AddExpenseModal = ({ isOpen, onClose, initialData }: AddExpenseModalProps)
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </div>
-            <h3 className="text-2xl font-display font-bold text-uofl-gray-900 mb-2">Add New Expense</h3>
-            <p className="text-uofl-gray-600">Track your spending with ease</p>
+            <h3 className="text-2xl font-display font-bold text-uofl-gray-900 mb-2">
+              {editingExpense ? 'Edit Expense' : 'Add New Expense'}
+            </h3>
+            <p className="text-uofl-gray-600">
+              {editingExpense ? 'Update your expense details' : 'Track your spending with ease'}
+            </p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -222,7 +253,7 @@ const AddExpenseModal = ({ isOpen, onClose, initialData }: AddExpenseModalProps)
                 type="submit"
                 className="flex-1 px-6 py-4 bg-gradient-to-r from-uofl-red to-uofl-red-light hover:from-uofl-red-dark hover:to-uofl-red text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-medium"
               >
-                Save Expense
+                {editingExpense ? 'Update Expense' : 'Save Expense'}
               </button>
             </div>
           </form>
