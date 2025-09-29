@@ -1,7 +1,7 @@
 {
-  "name": "expense-tracker-backend",
+  "name": "red-budget-backend",
   "version": "1.0.0",
-  "description": "Backend API for UofL Expense Tracker",
+  "description": "Backend API for Red Budget",
   "main": "server.js",
   "type": "module",
   "scripts": {

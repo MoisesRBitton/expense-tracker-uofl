@@ -1,4 +1,4 @@
-# UofL Expense Tracker - Setup Instructions
+# Red Budget - Setup Instructions
 
 ## Environment Configuration
 

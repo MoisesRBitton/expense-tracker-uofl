@@ -1,10 +1,10 @@
-# UofL Expense Tracker
+# Red Budget
 
 A modern, full-stack web application designed to help University of Louisville students manage their personal expenses with ease. Built with React, TypeScript, Node.js, and SQLite.
 
 ## 🎯 Project Overview
 
-The UofL Expense Tracker is a comprehensive financial management tool specifically designed for University of Louisville students. It provides an intuitive interface for tracking expenses, managing budgets, and gaining insights into spending habits.
+Red Budget is a comprehensive financial management tool specifically designed for University of Louisville students. It provides an intuitive interface for tracking expenses, managing budgets, and gaining insights into spending habits.
 
 ### Key Features
 

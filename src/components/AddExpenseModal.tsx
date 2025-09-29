@@ -30,6 +30,7 @@ type AddExpenseModalProps = {
 const AddExpenseModal = ({ isOpen, onClose, initialData, editingExpense }: AddExpenseModalProps) => {
   const addExpense = useExpensesStore((s) => s.addExpense);
   const updateExpense = useExpensesStore((s) => s.updateExpense);
+  const deleteExpense = useExpensesStore((s) => s.deleteExpense);
   const studentId = useExpensesStore((s) => s.studentId);
 
   const [amount, setAmount] = useState<string>('');
@@ -153,6 +154,25 @@ const AddExpenseModal = ({ isOpen, onClose, initialData, editingExpense }: AddEx
     }
   };
 
+  const handleDelete = async () => {
+    if (!editingExpense) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete this expense?\n\n${editingExpense.description || 'No description'} - $${editingExpense.amount.toFixed(2)}`
+    );
+
+    if (confirmed) {
+      try {
+        await deleteExpense(editingExpense.id);
+        toast.success('Expense deleted successfully!');
+        handleClose();
+      } catch (error) {
+        toast.error('Failed to delete expense. Please try again.');
+        console.error('Error deleting expense:', error);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50">
       <div 
@@ -191,11 +211,17 @@ const AddExpenseModal = ({ isOpen, onClose, initialData, editingExpense }: AddEx
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-uofl-gray-500 font-semibold text-lg">$</div>
                 <input
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    // Only allow numbers, decimal point, and backspace
+                    const value = e.target.value;
+                    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                      setAmount(value);
+                    }
+                  }}
+                  onWheel={(e) => e.currentTarget.blur()} // Prevent scroll from changing value
                   className="w-full pl-8 pr-4 py-4 border-2 border-uofl-gray-200 rounded-xl focus:outline-none focus:border-uofl-red focus:ring-4 focus:ring-uofl-red/20 transition-all duration-300 text-lg font-mono"
                   placeholder="0.00"
                   required
@@ -239,9 +265,42 @@ const AddExpenseModal = ({ isOpen, onClose, initialData, editingExpense }: AddEx
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full border-2 border-uofl-gray-200 rounded-xl px-4 py-4 focus:outline-none focus:border-uofl-red focus:ring-4 focus:ring-uofl-red/20 transition-all duration-300 text-lg"
               />
+              
+              {/* Quick Date Options */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                <span className="text-xs text-uofl-gray-500 font-medium">Quick select:</span>
+                {[
+                  { label: 'Today', value: new Date().toISOString().split('T')[0] },
+                  { label: 'Yesterday', value: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                  { label: '3 days ago', value: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                  { label: '1 week ago', value: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                ].map(option => (
+                  <button
+                    key={option.label}
+                    type="button"
+                    onClick={() => setDate(option.value)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 ${
+                      date === option.value
+                        ? 'bg-uofl-red text-white'
+                        : 'bg-uofl-gray-100 text-uofl-gray-600 hover:bg-uofl-gray-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex space-x-4 pt-4">
+            <div className={`flex space-x-4 pt-4 ${editingExpense ? 'flex-col sm:flex-row' : ''}`}>
+              {editingExpense && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="w-full sm:w-auto px-6 py-4 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-medium mb-4 sm:mb-0 sm:mr-4"
+                >
+                  Delete Expense
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleClose}

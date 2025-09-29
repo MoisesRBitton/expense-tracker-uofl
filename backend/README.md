@@ -1,6 +1,6 @@
-# UofL Expense Tracker Backend
+# Red Budget Backend
 
-Backend API for the University of Louisville Expense Tracker application.
+Backend API for the Red Budget application.
 
 ## Setup
 
